@@ -311,7 +311,7 @@ def submit_contact():
     # Send an email notification
     msg = Message(
         'New Contact Message',
-        sender='noreply@yourdomain.com',
+        sender=app.config['MAIL_DEFAULT_SENDER'],
         recipients=['prodbysmig@gmail.com']
     )
     msg.body = f"""
@@ -324,24 +324,12 @@ def submit_contact():
     {data.get('message')}
     """
     
-    mail.send(msg)
-
-    return jsonify({'message': 'Message sent successfully'}), 201
-
-def send_email(subject, recipient, body):
-    msg = Message(subject=subject,
-                  recipients=[recipient],
-                  body=body,
-                  sender=app.config['MAIL_DEFAULT_SENDER'])
-    mail.send(msg)
-
-@app.route('/send_email', methods=['POST'])
-def send_email_route():
-    data = request.json
-    send_email(subject='Contact Form Submission',
-               recipient='prodbysmig@gmail.com',  # Always send to this email
-               body=f"Message from {data['firstName']} {data['lastName']}:\n{data['message']}")
-    return 'Email sent successfully!', 200
+    try:
+        mail.send(msg)
+        return jsonify({'message': 'Message sent successfully'}), 201
+    except Exception as e:
+        print(f'Error: {e}')  # Print the error message for debugging
+        return jsonify({'message': 'Failed to send email. Please try again later.'}), 500
 
 @app.route('/api/contact', methods=['POST'])
 def contact():
@@ -359,12 +347,12 @@ def contact():
             Message:
             {data['message']}
             """,
-            sender=data['email']  # Check if sender is valid
+            sender=app.config['MAIL_DEFAULT_SENDER']  # Use default sender
         )
         mail.send(msg)
         return jsonify({'message': 'Email sent successfully!'}), 200
     except Exception as e:
-        print(f'Error: {e}')  # Print the error message
+        print(f'Error: {e}')  # Print the error message for debugging
         return jsonify({'message': 'Failed to send email. Please try again later.'}), 500
 
 @app.route('/test-email', methods=['POST'])
