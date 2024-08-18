@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 from models import db
 from config import Config
 from flask_cors import CORS
-import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -25,6 +24,7 @@ migrate = Migrate(app, db)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/charity": {"origins": "http://localhost:5173"}})
  
 
 from routes import *

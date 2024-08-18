@@ -26,6 +26,9 @@ mail = Mail(app)
 
 logging.basicConfig(level=logging.INFO)
 
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_DOCUMENT_EXTENSIONS = {'pdf'}
+
 @app.route('/')
 def home():
     return jsonify({'message': 'Hello, World!'})
@@ -218,21 +221,44 @@ def get_contacts():
     return jsonify({'contacts': serialized_contacts}), 200
 
 # User Admin
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
 @app.route('/charity', methods=['POST'])
 def add_charity():
-    data = request.json
+    data = request.form
+
+    # Handle image file upload
+    image_file = request.files.get('image')
+    if image_file and allowed_file(image_file.filename, ALLOWED_IMAGE_EXTENSIONS):
+        image_filename = secure_filename(image_file.filename)
+        image_path = os.path.join('uploads/images', image_filename)
+        image_file.save(image_path)
+    else:
+        return jsonify({"message": "Invalid image format"}), 400
+
+    # Handle document file upload
+    document_file = request.files.get('document')
+    if document_file and allowed_file(document_file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
+        document_filename = secure_filename(document_file.filename)
+        document_path = os.path.join('uploads/documents', document_filename)
+        document_file.save(document_path)
+    else:
+        return jsonify({"message": "Invalid document format"}), 400
+
+    # Create a new Charity record in the database
     new_charity = Charity(
-        first_name=data['first_name'],
-        last_name=data['last_name'],
-        image=data['image'],
+        first_name=data.get('first_name'),
+        last_name=data.get('last_name'),
+        image=image_path,  # Store the image file path
         amount=data.get('amount'),
-        email=data['email'],
-        document=data['document']
+        email=data.get('email'),
+        document=document_path  # Store the document file path
     )
     db.session.add(new_charity)
     db.session.commit()
-    return jsonify({"message": "Charity added successfully"}), 201
 
+    return jsonify({"message": "Charity added successfully"}), 201
 @app.route('/charity', methods=['GET'])
 def get_charity():
     charity = Charity.query.all()
