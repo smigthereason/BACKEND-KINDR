@@ -13,7 +13,6 @@ app.config.from_object(Config)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = 'your-email@gmail.com'  # Your email address
-app.config['MAIL_PASSWORD'] = 'your-email-password'    # Your email password
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_DEFAULT_SENDER'] = 'victor.dmaina@gmail.com'  # Updated sender address
