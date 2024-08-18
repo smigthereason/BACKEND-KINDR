@@ -11,6 +11,9 @@ from flask_mail import Mail, Message
 from flask import render_template
 from app import app, mail 
 from models import User  # Import your User model
+from werkzeug.utils import secure_filename
+import os
+
 
 
 jwt = JWTManager(app)
@@ -26,8 +29,14 @@ mail = Mail(app)
 
 logging.basicConfig(level=logging.INFO)
 
+# Set up allowed extensions and upload folder
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-ALLOWED_DOCUMENT_EXTENSIONS = {'pdf'}
+ALLOWED_DOCUMENT_EXTENSIONS = {'pdf', 'doc', 'docx'}
+UPLOAD_FOLDER = 'uploads'
+
+# Ensure upload folders exist
+os.makedirs(os.path.join(UPLOAD_FOLDER, 'images'), exist_ok=True)
+os.makedirs(os.path.join(UPLOAD_FOLDER, 'documents'), exist_ok=True)
 
 @app.route('/')
 def home():
@@ -232,7 +241,7 @@ def add_charity():
     image_file = request.files.get('image')
     if image_file and allowed_file(image_file.filename, ALLOWED_IMAGE_EXTENSIONS):
         image_filename = secure_filename(image_file.filename)
-        image_path = os.path.join('uploads/images', image_filename)
+        image_path = os.path.join(UPLOAD_FOLDER, 'images', image_filename)
         image_file.save(image_path)
     else:
         return jsonify({"message": "Invalid image format"}), 400
@@ -241,7 +250,7 @@ def add_charity():
     document_file = request.files.get('document')
     if document_file and allowed_file(document_file.filename, ALLOWED_DOCUMENT_EXTENSIONS):
         document_filename = secure_filename(document_file.filename)
-        document_path = os.path.join('uploads/documents', document_filename)
+        document_path = os.path.join(UPLOAD_FOLDER, 'documents', document_filename)
         document_file.save(document_path)
     else:
         return jsonify({"message": "Invalid document format"}), 400
@@ -259,6 +268,7 @@ def add_charity():
     db.session.commit()
 
     return jsonify({"message": "Charity added successfully"}), 201
+
 @app.route('/charity', methods=['GET'])
 def get_charity():
     charity = Charity.query.all()
