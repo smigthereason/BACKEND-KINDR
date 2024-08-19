@@ -28,6 +28,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/charity": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/*": {"origins": "https://kindr-709dkuv0f-victor-mainas-projects.vercel.app"}})
+CORS(app, resources={r"/*": {"origins": "https://kindr-709dkuv0f-victor-mainas-projects.vercel.app", "supports_credentials": True}})
 
 from routes import *
 
